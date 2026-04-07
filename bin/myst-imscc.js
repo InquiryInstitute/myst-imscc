@@ -25,7 +25,7 @@ Environment:
   AIMA_VARIANT_REPOS_ROOT   Parent of aima-* clones (see outputRoot)
 
 Config keys:
-  repoRoot, outputRoot, beforeImsccHook — see README
+  repoRoot, outputRoot, beforeImsccHook, beforeMystBuildHook — see README
 `);
   process.exit(1);
 }
@@ -96,6 +96,18 @@ async function main() {
     }
   }
 
+  let beforeMystBuild;
+  const mystHookPath = config.beforeMystBuildHook
+    ? path.resolve(configDir, config.beforeMystBuildHook)
+    : null;
+  if (mystHookPath) {
+    const mod = await import(pathToFileURL(mystHookPath).href);
+    beforeMystBuild = mod.beforeMystBuild ?? mod.default;
+    if (typeof beforeMystBuild !== 'function') {
+      throw new Error(`beforeMystBuild hook must export a function: ${mystHookPath}`);
+    }
+  }
+
   const variantsPath = path.join(configDir, config.variantsFile ?? 'variants.json');
   const variantsDoc = await readJson(variantsPath);
   const variantKeys = Object.keys(variantsDoc.variants ?? {});
@@ -104,7 +116,18 @@ async function main() {
   const mystSourceDir = path.resolve(configDir, config.mystProject ?? 'myst');
   const courseTitle = config.courseTitle ?? 'Course';
 
-  const jupyterChapters = config.jupyterBook?.chapters ?? null;
+  const jb = config.jupyterBook;
+  const exports =
+    jb?.chapters?.length > 0
+      ? {
+          jupyterBook: {
+            chapters: jb.chapters,
+            thebe: jb.thebe,
+            binderRepo: jb.binderRepo,
+            binderRef: jb.binderRef,
+          },
+        }
+      : {};
 
   const runVariant = async (key) => {
     const outBase = path.join(configDir, '.myst-imscc-out', key);
@@ -114,10 +137,9 @@ async function main() {
       workDir: outBase,
       variantKey: key,
       courseTitle,
-      exports: jupyterChapters
-        ? { jupyterBook: { chapters: jupyterChapters } }
-        : {},
+      exports,
       beforeImscc,
+      beforeMystBuild,
       configDir,
       repoRoot,
     });

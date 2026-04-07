@@ -3,14 +3,27 @@ import path from 'node:path';
 
 /**
  * Emit a Jupyter Book project from a list of Markdown chapter paths (copied into outDir).
+ * When `thebe` is true (AI Dialogic), adds launch buttons and Binder repo for in-browser execution.
  * @param {object} o
  * @param {string} o.title
  * @param {{ path: string, title?: string }[]} o.chapters — paths relative to myst project (e.g. `lessons/week-01.md`)
  * @param {string} o.mystProjectDir
  * @param {string} o.outDir — Jupyter Book root (contains _config.yml, _toc.yml, content/)
+ * @param {string} [o.variantKey]
+ * @param {boolean} [o.thebe] — Enable Thebe / live kernels in built HTML
+ * @param {string} [o.binderRepo] — e.g. `aimacode/aima-python`
+ * @param {string} [o.binderRef] — git ref for Binder
  */
 export async function buildJupyterBookProject(o) {
-  const { title, chapters, mystProjectDir, outDir } = o;
+  const {
+    title,
+    chapters,
+    mystProjectDir,
+    outDir,
+    thebe = false,
+    binderRepo = 'aimacode/aima-python',
+    binderRef = 'master',
+  } = o;
   const contentDir = path.join(outDir, 'content');
   await fs.mkdir(contentDir, { recursive: true });
 
@@ -38,13 +51,27 @@ export async function buildJupyterBookProject(o) {
     toc.chapters.push({ file: destName.replace(/\.md$/, ''), title: ch.title ?? base });
   }
 
+  const repoUrl = `https://github.com/${binderRepo}`;
+  const thebeBlock =
+    thebe
+      ? `
+repository:
+  url: ${JSON.stringify(repoUrl)}
+html:
+  use_thebe_lite: true
+launch_buttons:
+  thebe: true
+  binderhub_url: https://mybinder.org
+`
+      : '';
+
   const configYml = `title: ${JSON.stringify(title)}
 author: Inquiry Institute
 execute:
   execute_notebooks: off
 parse:
   myst_enable_extensions: true
-`;
+${thebeBlock}`;
 
   const tocLines = ['format: jb-book', 'root: intro', 'chapters:'];
   for (const ch of toc.chapters) {

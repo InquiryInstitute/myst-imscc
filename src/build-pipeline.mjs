@@ -29,6 +29,7 @@ import { copyTree } from './copy-tree.mjs';
  * @param {string} [o.configDir] — Directory containing myst-imscc.config.json (for hooks)
  * @param {string} [o.repoRoot] — Monorepo root (e.g. aima) for hooks that run sibling scripts
  * @param {(ctx: { htmlDir: string, variantKey: string, workDir: string, mystBuildDir: string, courseTitle: string, mystSourceDir: string, configDir?: string, repoRoot?: string }) => Promise<void>} [o.beforeImscc] — After MyST HTML build, before IMS CC packaging
+ * @param {(ctx: { variantKey: string, workDir: string, mystBuildDir: string, courseTitle: string, mystSourceDir: string, configDir?: string, repoRoot?: string }) => Promise<void>} [o.beforeMystBuild] — After copying MyST sources, before `myst build --html`
  */
 export async function buildVariantPipeline(o) {
   const {
@@ -38,6 +39,7 @@ export async function buildVariantPipeline(o) {
     courseTitle,
     exports = {},
     beforeImscc,
+    beforeMystBuild,
     configDir,
     repoRoot,
   } = o;
@@ -45,6 +47,18 @@ export async function buildVariantPipeline(o) {
   await fs.mkdir(workDir, { recursive: true });
   const mystBuildDir = path.join(workDir, 'myst-project');
   await prepareMystProjectDir(mystSourceDir, mystBuildDir, variantKey);
+
+  if (typeof beforeMystBuild === 'function') {
+    await beforeMystBuild({
+      variantKey,
+      workDir,
+      mystBuildDir,
+      courseTitle,
+      mystSourceDir,
+      configDir,
+      repoRoot,
+    });
+  }
 
   await runMystHtmlBuild(mystBuildDir);
   const htmlDir = defaultMystHtmlOut(mystBuildDir);
@@ -90,6 +104,10 @@ export async function buildVariantPipeline(o) {
       chapters: exports.jupyterBook.chapters,
       mystProjectDir: mystBuildDir,
       outDir: jupyterBookDir,
+      variantKey,
+      thebe: exports.jupyterBook.thebe ?? variantKey === 'dialogic',
+      binderRepo: exports.jupyterBook.binderRepo,
+      binderRef: exports.jupyterBook.binderRef,
     });
   }
 

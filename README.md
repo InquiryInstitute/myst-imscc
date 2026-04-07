@@ -38,6 +38,8 @@ Peer usage expects `mystmd` (bundled as a dependency of this package).
 | `repoRoot` | Path relative to the config file for the **monorepo root** (where `package.json` and hooks run). Default: `..` |
 | `outputRoot` | Path relative to the config file for **sibling variant repos** (`aima-*`). Default: `..` |
 | `beforeImsccHook` | ESM module (relative to config) exporting `beforeImscc(ctx)` — runs after MyST `build --html`, before IMS CC packaging. Used in aima for Polly TTS (delivery / dialogic). |
+| `beforeMystBuildHook` | ESM module exporting `beforeMystBuild(ctx)` — runs after variant preprocessing, **before** `myst build`. Used in aima for **AI Dialogic** (`project.jupyter` / Thebe + Binder in `myst.yml`). |
+| `jupyterBook` | Optional `binderRepo`, `binderRef`, `thebe` — **Thebe** defaults on when `variantKey === dialogic`. |
 
 ## CLI
 
