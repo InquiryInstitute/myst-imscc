@@ -1,6 +1,6 @@
 {
   "name": "@inquiryinstitute/myst-imscc",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Build IMS Common Cartridge and Jupyter Book outputs from MyST projects; sync per-variant course repositories (e.g. aima-basic).",
   "type": "module",
   "main": "./src/index.js",

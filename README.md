@@ -24,6 +24,8 @@ Peer usage expects `mystmd` (bundled as a dependency of this package).
 3. `myst-imscc build --config course/myst-imscc.config.json` — runs MyST `build --html --ci`, packages `course.imscc`, renders `docs/` from the cartridge.
 4. `myst-imscc build-all --config … --push` — repeats for every variant in `variants.json`, wipes sibling repos (`../aima-*`), copies `docs/`, `course.imscc`, optional `jupyter-book/`, then commits and pushes.
 
+**Git LFS:** Variant repos include a `.gitattributes` rule so `course.imscc` is stored with **Git LFS** (large cartridges with embedded slides/audio can exceed GitHub’s 100MB blob limit). Install [Git LFS](https://git-lfs.com/) (`git lfs install`) on the machine that runs `--push`.
+
 ## Config (`myst-imscc.config.json`)
 
 | Field | Meaning |

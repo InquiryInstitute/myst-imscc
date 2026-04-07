@@ -28,6 +28,12 @@ export async function copyArtifactsToVariantRepo(o) {
   await fs.mkdir(path.join(repoDir, 'docs'), { recursive: true });
   await copyTree(docsDir, path.join(repoDir, 'docs'));
   if (imsccFile) {
+    // GitHub rejects blobs >100MB; IMS CC with embedded Reveal/audio can exceed that — use Git LFS.
+    await fs.writeFile(
+      path.join(repoDir, '.gitattributes'),
+      '*.imscc filter=lfs diff=lfs merge=lfs -text\n',
+      'utf8'
+    );
     await fs.copyFile(imsccFile, path.join(repoDir, 'course.imscc'));
   }
   if (readme) {
