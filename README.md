@@ -34,12 +34,10 @@ Peer usage expects `mystmd` (bundled as a dependency of this package).
 | `organization` | GitHub org for display / naming |
 | `repoPrefix` | Repo basename prefix (default `aima`) |
 | `outputRoot` | Parent directory containing `aima-*` clones (default `..`) |
-| `jupyterBook` | Optional `{ "chapters": [{ "path": "syllabus.md", "title": "Syllabus" }] }` |
-| `repoRoot` | Path relative to the config file for the **monorepo root** (where `package.json` and hooks run). Default: `..` |
-| `outputRoot` | Path relative to the config file for **sibling variant repos** (`aima-*`). Default: `..` |
-| `beforeImsccHook` | ESM module (relative to config) exporting `beforeImscc(ctx)` — runs after MyST `build --html`, before IMS CC packaging. Used in aima for Polly TTS (delivery / dialogic). |
-| `beforeMystBuildHook` | ESM module exporting `beforeMystBuild(ctx)` — runs after variant preprocessing, **before** `myst build`. Used in aima for **AI Dialogic** (`project.jupyter` / Thebe + Binder in `myst.yml`). |
-| `jupyterBook` | Optional `binderRepo`, `binderRef`, `thebe` — **Thebe** defaults on when `variantKey === dialogic`. |
+| `repoRoot` | **Monorepo root** (where `package.json` / hooks run), relative to config. Default: `..` |
+| `jupyterBook` | `{ "chapters": [...], "binderRepo"?, "binderRef"?, "thebe"? }` — **Thebe** in the emitted Jupyter Book defaults on when `variantKey === dialogic`. |
+| `beforeImsccHook` | ESM module exporting `beforeImscc(ctx)` — after MyST HTML build, before IMS CC. |
+| `beforeMystBuildHook` | ESM module exporting `beforeMystBuild(ctx)` — after preprocess, **before** `myst build`. |
 
 ## CLI
 
