@@ -1,0 +1,51 @@
+{
+  "name": "@inquiryinstitute/myst-imscc",
+  "version": "0.1.0",
+  "description": "Build IMS Common Cartridge and Jupyter Book outputs from MyST projects; sync per-variant course repositories (e.g. aima-basic).",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "bin": {
+    "myst-imscc": "./bin/myst-imscc.js"
+  },
+  "files": [
+    "src",
+    "bin",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "lint": "node --check bin/myst-imscc.js && node --check src/index.js"
+  },
+  "keywords": [
+    "myst",
+    "mystmd",
+    "ims",
+    "common-cartridge",
+    "imscc",
+    "jupyter-book",
+    "course",
+    "github-pages"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/InquiryInstitute/myst-imscc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/InquiryInstitute/myst-imscc/issues"
+  },
+  "homepage": "https://github.com/InquiryInstitute/myst-imscc#readme",
+  "dependencies": {
+    "@inquiryinstitute/imscc-pages": "github:InquiryInstitute/imscc-pages",
+    "jszip": "^3.10.1",
+    "mystmd": "^1.8.3"
+  }
+}
