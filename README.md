@@ -35,7 +35,7 @@ Peer usage expects `mystmd` (bundled as a dependency of this package).
 | `repoPrefix` | Repo basename prefix (default `aima`) |
 | `outputRoot` | Parent directory containing `aima-*` clones (default `..`) |
 | `repoRoot` | **Monorepo root** (where `package.json` / hooks run), relative to config. Default: `..` |
-| `jupyterBook` | `{ "chapters": [...], "binderRepo"?, "binderRef"?, "thebe"? }` — **Thebe** in the emitted Jupyter Book defaults on when `variantKey === dialogic`. |
+| `jupyterBook` | `{ "chapters": [...], "binderRepo"?, "binderRef"?, "thebe"? }` — **Thebe** in the emitted Jupyter Book defaults on when `variantKey === dialogic` (supplemental; dialogic still expects Codespaces + LLM at runtime). |
 | `beforeImsccHook` | ESM module exporting `beforeImscc(ctx)` — after MyST HTML build, before IMS CC. |
 | `beforeMystBuildHook` | ESM module exporting `beforeMystBuild(ctx)` — after preprocess, **before** `myst build`. |
 
