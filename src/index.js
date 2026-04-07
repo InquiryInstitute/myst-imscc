@@ -1,5 +1,5 @@
 export { runMystHtmlBuild, defaultMystHtmlOut } from './run-myst.mjs';
-export { buildImsccFromMystHtml } from './build-imscc.mjs';
+export { buildImsccFromMystHtml, gatherWebcontentItems } from './build-imscc.mjs';
 export { zipCartridgeFolder } from './zip-cartridge.mjs';
 export { buildImsmanifestXml } from './write-imsmanifest.mjs';
 export { applyVariantBlocks } from './preprocess-variant.mjs';
