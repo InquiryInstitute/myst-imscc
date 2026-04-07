@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { buildVariantPipeline, syncVariantToRepo } from '../src/build-pipeline.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -14,13 +14,18 @@ Usage:
   myst-imscc build-all --config <myst-imscc.config.json> [--push]
 
 Options:
-  --config   Path to JSON config (see README)
-  --variant  Single variant key (default: first in variants.json)
-  --push     After copying to sibling repos, git commit + push
-  --dry-run  Build to .myst-imscc-out/ only; do not sync repos
+  --config <path>   JSON config (see README)
+  --variant <key>   Single variant (default: first in variants.json)
+  --push              After sync: git commit + push
+  --dry-run           Build only under .myst-imscc-out/
+  --hook <path>       Override beforeImscc hook (resolved from cwd)
 
 Environment:
-  AIMA_REPO_ROOT   Override repo root (default: dirname of config)/..
+  AIMA_REPO_ROOT            Monorepo root for hooks (see repoRoot)
+  AIMA_VARIANT_REPOS_ROOT   Parent of aima-* clones (see outputRoot)
+
+Config keys:
+  repoRoot, outputRoot, beforeImsccHook — see README
 `);
   process.exit(1);
 }
@@ -50,12 +55,14 @@ async function main() {
   let variant = null;
   let push = false;
   let dryRun = false;
+  let hookOverride = null;
 
   for (let i = 1; i < argv.length; i++) {
     if (argv[i] === '--config' && argv[i + 1]) configPath = argv[++i];
     else if (argv[i] === '--variant' && argv[i + 1]) variant = argv[++i];
     else if (argv[i] === '--push') push = true;
     else if (argv[i] === '--dry-run') dryRun = true;
+    else if (argv[i] === '--hook' && argv[i + 1]) hookOverride = argv[++i];
   }
 
   if (!configPath) {
@@ -66,8 +73,28 @@ async function main() {
   const configAbs = path.resolve(configPath);
   const config = await readJson(configAbs);
   const configDir = path.dirname(configAbs);
+  /** Monorepo root (e.g. aima) — hooks, npm scripts, lectures/ */
   const repoRoot =
-    process.env.AIMA_REPO_ROOT ?? path.resolve(configDir, config.outputRoot ?? '..');
+    process.env.AIMA_REPO_ROOT ??
+    path.resolve(configDir, config.repoRoot ?? config.outputRoot ?? '..');
+  /** Where sibling variant repos (aima-*) are cloned */
+  const variantReposRoot =
+    process.env.AIMA_VARIANT_REPOS_ROOT ??
+    path.resolve(configDir, config.outputRoot ?? '..');
+
+  let beforeImscc;
+  const hookPath = hookOverride
+    ? path.resolve(process.cwd(), hookOverride)
+    : config.beforeImsccHook
+      ? path.resolve(configDir, config.beforeImsccHook)
+      : null;
+  if (hookPath) {
+    const mod = await import(pathToFileURL(hookPath).href);
+    beforeImscc = mod.beforeImscc ?? mod.default;
+    if (typeof beforeImscc !== 'function') {
+      throw new Error(`beforeImscc hook must export a function: ${hookPath}`);
+    }
+  }
 
   const variantsPath = path.join(configDir, config.variantsFile ?? 'variants.json');
   const variantsDoc = await readJson(variantsPath);
@@ -90,6 +117,9 @@ async function main() {
       exports: jupyterChapters
         ? { jupyterBook: { chapters: jupyterChapters } }
         : {},
+      beforeImscc,
+      configDir,
+      repoRoot,
     });
 
     console.log('Built:', outBase);
@@ -100,7 +130,7 @@ async function main() {
     if (dryRun || cmd === 'build') return;
 
     const entry = variantsDoc.variants[key] ?? {};
-    const { local: repoDir } = resolveRepoDir(config, repoRoot, key, entry);
+    const { local: repoDir } = resolveRepoDir(config, variantReposRoot, key, entry);
     try {
       await fs.access(repoDir);
     } catch {

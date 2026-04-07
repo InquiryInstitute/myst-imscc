@@ -35,6 +35,9 @@ Peer usage expects `mystmd` (bundled as a dependency of this package).
 | `repoPrefix` | Repo basename prefix (default `aima`) |
 | `outputRoot` | Parent directory containing `aima-*` clones (default `..`) |
 | `jupyterBook` | Optional `{ "chapters": [{ "path": "syllabus.md", "title": "Syllabus" }] }` |
+| `repoRoot` | Path relative to the config file for the **monorepo root** (where `package.json` and hooks run). Default: `..` |
+| `outputRoot` | Path relative to the config file for **sibling variant repos** (`aima-*`). Default: `..` |
+| `beforeImsccHook` | ESM module (relative to config) exporting `beforeImscc(ctx)` — runs after MyST `build --html`, before IMS CC packaging. Used in aima for Polly TTS (delivery / dialogic). |
 
 ## CLI
 

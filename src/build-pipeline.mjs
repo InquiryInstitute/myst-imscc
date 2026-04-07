@@ -26,6 +26,9 @@ import { copyTree } from './copy-tree.mjs';
  * @param {string} o.variantKey — e.g. `basic`
  * @param {string} o.courseTitle
  * @param {{ jupyterBook?: { chapters: { path: string, title?: string }[] } }} [o.exports]
+ * @param {string} [o.configDir] — Directory containing myst-imscc.config.json (for hooks)
+ * @param {string} [o.repoRoot] — Monorepo root (e.g. aima) for hooks that run sibling scripts
+ * @param {(ctx: { htmlDir: string, variantKey: string, workDir: string, mystBuildDir: string, courseTitle: string, mystSourceDir: string, configDir?: string, repoRoot?: string }) => Promise<void>} [o.beforeImscc] — After MyST HTML build, before IMS CC packaging
  */
 export async function buildVariantPipeline(o) {
   const {
@@ -34,6 +37,9 @@ export async function buildVariantPipeline(o) {
     variantKey,
     courseTitle,
     exports = {},
+    beforeImscc,
+    configDir,
+    repoRoot,
   } = o;
 
   await fs.mkdir(workDir, { recursive: true });
@@ -42,6 +48,19 @@ export async function buildVariantPipeline(o) {
 
   await runMystHtmlBuild(mystBuildDir);
   const htmlDir = defaultMystHtmlOut(mystBuildDir);
+
+  if (typeof beforeImscc === 'function') {
+    await beforeImscc({
+      htmlDir,
+      variantKey,
+      workDir,
+      mystBuildDir,
+      courseTitle,
+      mystSourceDir,
+      configDir,
+      repoRoot,
+    });
+  }
 
   const cartridgeRoot = path.join(workDir, 'cartridge');
   const imsccPath = path.join(workDir, 'course.imscc');
